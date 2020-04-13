@@ -1,5 +1,5 @@
 {
-    "name": "gourmet/email"
+    "name": "lopezlean/cakephp-gourmet-email"
     , "description": "Gourmet Email Plugin for rapid CakePHP application development."
     , "type": "cakephp-plugin"
     , "keywords": ["cakephp", "gourmet", "email", "plugin"]
