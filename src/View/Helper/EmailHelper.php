@@ -8,6 +8,8 @@ use Cake\Utility\Hash;
 use Cake\Utility\Text;
 use Cake\View\Helper\HtmlHelper;
 use Cake\View\View;
+use Cake\View\StringTemplateTrait;
+
 
 class EmailHelper extends HtmlHelper
 {
@@ -49,22 +51,42 @@ class EmailHelper extends HtmlHelper
         ]
     ];
 
+    /**
+     * Document type definitions
+     *
+     * @var string[]
+     */
+    protected $_docTypes = [
+        'html4-strict' => '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">',
+        'html4-trans' => '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">',
+        'html4-frame' => '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">',
+        'html5' => '<!DOCTYPE html>',
+        'xhtml-strict' => '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">',
+        'xhtml-trans' => '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">',
+        'xhtml-frame' => '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">',
+        'xhtml11' => '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">',
+    ];
+
     protected $_emailType;
 
-    public function __construct(View $View, array $config = array())
+    
+    public function __construct(View $view, array $config = [])
     {
-        $this->_defaultConfig = Hash::merge($this->_defaultConfig, $this->_emailConfig);
-        parent::__construct($View, $config);
+        
+        $this->_defaultConfig = Hash::merge($this->_defaultConfig,$this->_emailConfig);
+       
+       parent::__construct($view,$config);
     }
+
 
     public function beforeRenderFile(Event $event, $viewFile)
     {
-        preg_match('/Email\/(text|html)\//', $viewFile, $match);
+        preg_match('/email\/(text|html)\//', $viewFile, $match);
         list(, $this->_emailType) = $match;
         $this->_eol = 'text' == $this->_emailType ? PHP_EOL : '<br>';
     }
 
-    public function implementedEvents()
+    public function implementedEvents():array
     {
         return ['View.beforeRenderFile' => 'beforeRenderFile'];
     }
@@ -76,7 +98,7 @@ class EmailHelper extends HtmlHelper
 
     protected function _eol()
     {
-        return $this->config('templates.eol' . $this->getType());
+        return $this->getConfig('templates.eol' . $this->getType());
     }
 
     /**
@@ -84,29 +106,33 @@ class EmailHelper extends HtmlHelper
      */
     public function docType($type = 'xhtml-strict')
     {
-        return parent::docType($type);
+        if (isset($this->_docTypes[$type])) {
+            return $this->_docTypes[$type];
+        }
+
+        return null;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function image($path, array $options = array())
+    public function image($path, array $options = array()):string
     {
         if ('text' == $this->getType()) {
             return null;
         }
-        return parent::image($path, $this->_mergeAttributes($options, $this->config('attributes.image')));
+        return parent::image($path, $this->_mergeAttributes($options, $this->getConfig('attributes.image')));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function link($title, $url = null, array $options = array())
+    public function link($title, $url = null, array $options = array()):string
     {
-        $url = Router::url($url, ['full' => true]);
+        $url = Router::url($url, true);
 
         if ('html' == $this->getType()) {
-            return parent::link($title, $url, $this->_mergeAttributes($options, $this->config('attributes.link')));
+            return parent::link($title, $url, $this->_mergeAttributes($options, $this->getConfig('attributes.link')));
         }
 
         if (empty($url)) {
@@ -121,25 +147,25 @@ class EmailHelper extends HtmlHelper
     /**
      * {@inheritdoc}
      */
-    public function media($path, array $options = array())
+    public function media($path, array $options = array()):string
     {
         if ('text' == $this->getType()) {
-            return;
+            return '';
         }
 
-        return parent::media($path, $this->_mergeAttributes($options, $this->config('attributes.media')));
+        return parent::media($path, $this->_mergeAttributes($options, $this->getConfig('attributes.media')));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function para($class, $text, array $options = array())
+    public function para($class, $text, array $options = array()):string
     {
         if ('text' == $this->getType()) {
             return $this->_eol() . $this->_eol() . $text . $this->_eol() . $this->_eol();
         }
 
-        return parent::para($class, $text, $this->_mergeAttributes($options, $this->config('attributes.para')));
+        return parent::para($class, $text, $this->_mergeAttributes($options, $this->getConfig('attributes.para')));
     }
 
     /**
@@ -156,7 +182,7 @@ class EmailHelper extends HtmlHelper
         }
 
         if (false === $options) {
-            return $this->config('templates.tableend');
+            return $this->getConfig('templates.tableend');
         }
 
         $tag = 'table';
@@ -166,7 +192,7 @@ class EmailHelper extends HtmlHelper
 
         $templater = $this->templater();
         return $templater->format('table', [
-        'attrs' => $templater->formatAttributes($this->_mergeAttributes($options, $this->config('attributes.table'))),
+        'attrs' => $templater->formatAttributes($this->_mergeAttributes($options, $this->getConfig('attributes.table'))),
         'content' => $content
         ]);
     }

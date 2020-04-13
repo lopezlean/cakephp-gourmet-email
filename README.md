@@ -19,10 +19,10 @@ Using [Composer]:
 composer require gourmet/email:~3.0
 ```
 
-You then need to load the plugin. In `boostrap.php`, something like:
+You then need to load the plugin. In `Application.php`, something like:
 
 ```php
-\Cake\Core\Plugin::load('Gourmet/Email');
+$this->addPlugin('Gourmet/Email');
 ```
 
 ## Usage
