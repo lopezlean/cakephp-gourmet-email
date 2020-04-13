@@ -4,19 +4,17 @@
 [![Total Downloads](https://poser.pugx.org/gourmet/email/downloads.svg)](https://packagist.org/packages/gourmet/email)
 [![License](https://poser.pugx.org/gourmet/email/license.svg)](https://packagist.org/packages/gourmet/email)
 
-Makes [CakePHP 3]'s `Email` even better by adding:
+Makes [CakePHP 4]'s `Email` even better by adding:
 
 * Default email layout with basic styling (safe for emails)
 * `EmailHelper` which extends `HtmlHelper` to automatically format paragraphs, links, etc.
-* Built-in support/configuration for major providers (Mailchimp, Sendgrid, Mandrill, etc.) - coming soon.
-* Admin email preview - coming soon.
 
 ## Install
 
 Using [Composer]:
 
 ```
-composer require gourmet/email:~3.0
+composer require lopezlean/cakephp-gourmet-email:dev-master
 ```
 
 You then need to load the plugin. In `Application.php`, something like:
@@ -26,20 +24,6 @@ $this->addPlugin('Gourmet/Email');
 ```
 
 ## Usage
-
-Change your `default` email configuration (or create a new one) in `config/app.php`:
-
-```php
-'Email' => [
-	'default' => [
-		'transport' => 'default',
-		'from' => 'you@localhost',
-		'layout' => 'Gourmet/Email.default',
-		'helpers' => ['Html', 'Gourmet/Email.Email'],
-		'emailFormat' => 'both',
-	]
-]
-```
 
 In your email views, you can now use the `Gourmet/Email.Email` helper:
 
@@ -71,11 +55,14 @@ $ ln -s html app/Template/Email/text
 It's finally ready to send an email:
 
 ```php
-$email = new Email();
-$email->to('john@doe.com');
-$email->template('welcome');
-$email->viewVars(['user' => ['username' => 'johndoe']]);
-$email->send();
+        $mailer
+            ->setEmailFormat('both')
+            ->setTo("to@example.com")
+            ->setFrom(['example@example.com' => 'Example'])
+            ->viewBuilder()
+                ->setHelpers(['Html','Gourmet/Email.Email'])
+                ->setLayout('Gourmet/Email.default')
+                ->setTemplate('my_template');
 ```
 
 ## Patches & Features
@@ -89,12 +76,13 @@ their own that I can ignore when I pull)
 
 ## Bugs & Feedback
 
-http://github.com/gourmet/emails/issues
+http://github.com/lopezlean/cakephp-gourmet-email/issues
 
 ## License
 
 Copyright (c) 2014, Jad Bitar and licensed under [The MIT License][mit].
+Copyright (c) 2020, Leandro López and licensed under [The MIT License][mit].
 
-[CakePHP 3]:http://cakephp.org
+[CakePHP 4]:http://cakephp.org
 [Composer]:http://getcomposer.org
 [mit]:http://www.opensource.org/licenses/mit-license.php
